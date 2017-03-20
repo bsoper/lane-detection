@@ -19,9 +19,9 @@ polydrawer = Polydrawer()
 def main():
     # video = 'harder_challenge_video'
     # video = 'challenge_video'
-    video = 'project_video'
+    video = 'other_video'
     white_output = '{}_done_2.mp4'.format(video)
-    clip1 = VideoFileClip('{}.mp4'.format(video)).subclip(30, 51)
+    clip1 = VideoFileClip('{}.mp4'.format(video)).subclip(10, 20)
     white_clip = clip1.fl_image(process_image)  # NOTE: this function expects color images!!
     white_clip.write_videofile(white_output, audio=False)
 

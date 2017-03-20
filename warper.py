@@ -4,12 +4,14 @@ import numpy as np
 
 class Warper:
     def __init__(self):
+        ratio = 960 / 1280
         src = np.float32([
             [580, 460],
             [700, 460],
             [1040, 680],
             [260, 680],
         ])
+        src *= ratio
 
         dst = np.float32([
             [260, 0],
@@ -17,6 +19,7 @@ class Warper:
             [1040, 720],
             [260, 720],
         ])
+        dst *= ratio
 
         self.M = cv2.getPerspectiveTransform(src, dst)
         self.Minv = cv2.getPerspectiveTransform(dst, src)
