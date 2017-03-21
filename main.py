@@ -21,7 +21,8 @@ def main():
     # video = 'challenge_video'
     video = 'other_video'
     white_output = '{}_done_2.mp4'.format(video)
-    clip1 = VideoFileClip('{}.mp4'.format(video)).subclip(10, 20)
+    clip1 = VideoFileClip('{}.mp4'.format(video))#.subclip(10, 20)
+    warper.set_transforms(clip1.size)
     white_clip = clip1.fl_image(process_image)  # NOTE: this function expects color images!!
     white_clip.write_videofile(white_output, audio=False)
 

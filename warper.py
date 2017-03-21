@@ -3,23 +3,25 @@ import numpy as np
 
 
 class Warper:
-    def __init__(self):
-        ratio = 960 / 1280
+    #def __init__(self):
+
+    def set_transforms(self, video_size):
+        ratio_x = video_size[0] / 1280
+        ratio_y = video_size[1] / 720
+
         src = np.float32([
-            [580, 460],
-            [700, 460],
-            [1040, 680],
-            [260, 680],
+            [580 * ratio_x, 460 * ratio_y],
+            [700 * ratio_x, 460 * ratio_y],
+            [1040 * ratio_x, 680 * ratio_y],
+            [260 * ratio_x, 680 * ratio_y],
         ])
-        src *= ratio
 
         dst = np.float32([
-            [260, 0],
-            [1040, 0],
-            [1040, 720],
-            [260, 720],
+            [260 * ratio_x, 0 * ratio_y],
+            [1040 * ratio_x, 0 * ratio_y],
+            [1040 * ratio_x, 720 * ratio_y],
+            [260 * ratio_x, 720 * ratio_y],
         ])
-        dst *= ratio
 
         self.M = cv2.getPerspectiveTransform(src, dst)
         self.Minv = cv2.getPerspectiveTransform(dst, src)
