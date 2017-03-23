@@ -24,21 +24,22 @@ def main(video_name='other_video'):
         video_name = video_name.split('.')[0]
 
     white_output = '{}_done_2.mp4'.format(video_name)
-    clip1 = VideoFileClip('{}.mp4'.format(video_name))
+    clip1 = VideoFileClip('{}.mp4'.format(video_name)).subclip(25, 35)
     warper.set_transforms(clip1.size)
     white_clip = clip1.fl_image(process_image)  # NOTE: this function expects color images!!
     white_clip.write_videofile(white_output, audio=False)
 
 
 def process_image(base):
-    try: 
-        fig = plt.figure(figsize=(10, 8))
-        i = 1
+    
+    fig = plt.figure(figsize=(10, 8))
+    i = 1
 
-        undistorted = undistorter.undistort(base)
-        misc.imsave('output_images/undistorted.jpg', undistorted)
+    undistorted = undistorter.undistort(base)
+    misc.imsave('output_images/undistorted.jpg', undistorted)
         # i = show_image(fig, i, undistorted, 'Undistorted', 'gray')
 
+    try:
         img = thresholder.threshold(undistorted)
         misc.imsave('output_images/thresholded.jpg', img)
         # i = show_image(fig, i, img, 'Thresholded', 'gray')
@@ -74,9 +75,9 @@ def process_image(base):
 
         return img
     except:
-        cv2.putText(base, "EXCEPTION IN PROCESSING", (450, 340), cv2.FONT_HERSHEY_SIMPLEX, 1,
+        cv2.putText(undistorted, "EXCEPTION IN PROCESSING", (450, 340), cv2.FONT_HERSHEY_SIMPLEX, 1,
                     color=(255, 0, 0), thickness=2)
-        return base
+        return undistorted
 
 
 def show_image(fig, i, img, title, cmap=None):
