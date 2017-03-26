@@ -12,6 +12,10 @@ cnts = cv2.findContours(median.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE
 cnts = cnts[0] if imutils.is_cv2() else cnts[1]
 
 # loop over the contours
+height, width = img.shape
+counts = {'left': 0, 'right': 0}
+on_left = True
+
 for c in cnts:
   # compute the center of the contour
   M = cv2.moments(c)
@@ -20,14 +24,35 @@ for c in cnts:
   area = int(M['m00'])
   # draw the contour and center of the shape on the image
 
-  if 5000 > area > 1000:
+  if area > 1000:
+    if cX > width / 2:
+      counts['right'] += 1
+      on_left = True
+    else:
+      counts['left'] += 1
+      on_left = False
+
     # cv2.drawContours(median, [c], -1, (180, 255, 10), 2)
     # cv2.circle(median, (cX, cY), 7, (255, 255, 255), -1)
-    cv2.putText(median, "DASH", (cX - 100, cY - 20),
-      cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 4)
-  if area >= 5000:
-    cv2.putText(median, "SOLID", (cX - 100, cY - 20),
-      cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 4)
+    #cv2.putText(median, "DASH", (cX - 100, cY - 20),
+    #  cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 4)
+  #if area >= 5000:
+    #cv2.putText(median, "SOLID", (cX - 100, cY - 20),
+    #  cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 4)
+  #print (int(height / 2))
+if counts['left'] > 1:
+  cv2.putText(median, "DASH", (int(width / 6), int(height / 2)),
+    cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 4)
+elif counts['left'] == 1:
+  cv2.putText(median, "Solid", (int(width / 6), int(height / 2)),
+    cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 4)
+
+if counts['right'] > 1:
+  cv2.putText(median, "DASH", (int(5 * width / 6), int(height / 2)),
+    cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 4)
+elif counts['right'] == 1:
+  cv2.putText(median, "Solid", (int(5 * width / 6), int(height / 2)),
+    cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 4)
 
      
 plt.subplot(211),plt.imshow(img,cmap = 'gray')
