@@ -9,6 +9,8 @@ from polyfitter import Polyfitter
 from thresholder import Thresholder
 from undistorter import Undistorter
 from warper import Warper
+from lane import Lane
+from dotted_detect import detect_dotted
 
 undistorter = Undistorter()
 thresholder = Thresholder()
@@ -48,6 +50,7 @@ def process_image(base):
         misc.imsave('output_images/warped.jpg', img)
         # i = show_image(fig, i, img, 'Warped', 'gray')
 
+        left_lane, right_lane = detect_dotted('output_images/warped.jpg')
         left_fit, right_fit = polyfitter.polyfit(img)
 
         img = polydrawer.draw(undistorted, left_fit, right_fit, warper.Minv)
@@ -69,6 +72,13 @@ def process_image(base):
         cv2.putText(img, "Car is {}".format(car_pos_text), (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, color=(255, 255, 255),
                     thickness=2)
 
+        # Add lane information to image
+        # Left
+        cv2.putText(img, left_lane.solid, (10, 200),
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 4)
+        # Right
+        cv2.putText(img, right_lane.solid, (100, 200),
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 4)
         # show_image(fig, i, img, 'Final')
         # plt.imshow(img)
         # plt.show()
