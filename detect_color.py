@@ -23,8 +23,8 @@ def detect_color(img):
     left_norm = np.sum(np.square(left_averages - left_averages.mean()))
     right_norm = np.sum(np.square(right_averages - right_averages.mean()))
 
-    left_color = ("white", "yellow")[int(left_norm > 1000)]
-    right_color = ("white", "yellow")[int(right_norm > 1000)]
+    left_color = ("White", "Yellow")[int(left_norm > 1000)]
+    right_color = ("White", "Yellow")[int(right_norm > 1000)]
 
     return left_color, right_color
 

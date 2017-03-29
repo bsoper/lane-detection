@@ -17,8 +17,6 @@ def detect_dotted(img):
     height, width = img.shape
     counts = {'left': 0, 'right': 0}
     on_left = True
-    right = Lane()
-    left = Lane()
 
     for c in cnts:
       # compute the center of the contour
@@ -38,41 +36,18 @@ def detect_dotted(img):
           counts['left'] += 1
           on_left = False
 
-        # cv2.drawContours(median, [c], -1, (180, 255, 10), 2)
-        # cv2.circle(median, (cX, cY), 7, (255, 255, 255), -1)
-        #cv2.putText(median, "DASH", (cX - 100, cY - 20),
-        #  cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 4)
-      #if area >= 5000:
-        #cv2.putText(median, "SOLID", (cX - 100, cY - 20),
-        #  cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 4)
-      #print (int(height / 2))
     if counts['left'] > 1:
-      cv2.putText(median, "DASH", (int(width / 6), int(height / 2)),
-        cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 4)
-      left.solid = 'Dash'
+      left_solid = 'Dash'
     elif counts['left'] == 1:
-      cv2.putText(median, "Solid", (int(width / 6), int(height / 2)),
-        cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 4)
-      left.solid = 'Solid'
+      left_solid= 'Solid'
 
     if counts['right'] > 1:
-      cv2.putText(median, "DASH", (int(5 * width / 6), int(height / 2)),
-        cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 4)
-      right.solid = 'Dash'
+      right_solid = 'Dash'
     elif counts['right'] == 1:
-      cv2.putText(median, "Solid", (int(5 * width / 6), int(height / 2)),
-        cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 4)
-      right.solid = 'Solid'
+      right_solid = 'Solid'
     
-    return left, right
+    return left_solid, right_solid
          
-#    plt.subplot(211),plt.imshow(img,cmap = 'gray')
-#    plt.title('Original Image'), plt.xticks([]), plt.yticks([])
-#    plt.subplot(212),plt.imshow(median,cmap = 'gray')
-#    plt.title('Blured Image'), plt.xticks([]), plt.yticks([])
-    # plt.subplot(213),plt.imshow(edges,cmap = 'gray')
-    # plt.title('Edge Image'), plt.xticks([]), plt.yticks([])
-#    plt.show()
 
 if __name__ == '__main__':
     left, right = detect_dotted('lane_type_test/warped3.jpg')

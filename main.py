@@ -10,8 +10,7 @@ from thresholder import Thresholder
 from undistorter import Undistorter
 from warper import Warper
 from lane import Lane
-from dotted_detect import detect_dotted
-from detect_color import detect_color
+from analyze_lane_type import analyze_lane_type
 
 undistorter = Undistorter()
 thresholder = Thresholder()
@@ -54,8 +53,7 @@ def process_image(base):
 
     # i = show_image(fig, i, img, 'Warped', 'gray')
 
-    left_lane, right_lane = detect_dotted('output_images/warped.jpg')
-    left_lane.color, right_lane.color = detect_color('output_images/warped_color.jpg')
+    left_lane, right_lane = analyze_lane_type('output_images/warped.jpg', 'output_images/warped_color.jpg')
     left_fit, right_fit = polyfitter.polyfit(img)
 
     img = polydrawer.draw(undistorted, left_fit, right_fit, warper.Minv)
