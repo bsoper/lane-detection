@@ -48,6 +48,10 @@ def process_image(base):
 
         img = warper.warp(img)
         misc.imsave('output_images/warped.jpg', img)
+        warp_color = warper.warp(undistorted)
+        warp_color[(img == 0)] = 1
+        misc.imsave('output_images/warped_color.jpg', warp_color)
+
         # i = show_image(fig, i, img, 'Warped', 'gray')
 
         left_lane, right_lane = detect_dotted('output_images/warped.jpg')
