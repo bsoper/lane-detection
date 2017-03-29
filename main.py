@@ -55,7 +55,7 @@ def process_image(base):
     # i = show_image(fig, i, img, 'Warped', 'gray')
 
     left_lane, right_lane = detect_dotted('output_images/warped.jpg')
-    detect_color('output_images/warped_color.jpg')
+    left_lane.color, right_lane.color = detect_color('output_images/warped_color.jpg')
     left_fit, right_fit = polyfitter.polyfit(img)
 
     img = polydrawer.draw(undistorted, left_fit, right_fit, warper.Minv)
@@ -97,10 +97,15 @@ def show_image(fig, i, img, title, cmap=None):
     a.set_title(title)
     return i + 1
 
+
 def add_lane_text(left_lane, right_lane, img):
     cv2.putText(img, left_lane.solid, (10, 200),
                 cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 4)
     cv2.putText(img, right_lane.solid, (100, 200),
+                cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 4)
+    cv2.putText(img, left_lane.color, (10, 240),
+                cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 4)
+    cv2.putText(img, right_lane.color, (100, 240),
                 cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 4)
     return img
 
