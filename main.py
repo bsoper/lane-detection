@@ -26,7 +26,7 @@ def main(video_name='other_video'):
         video_name = video_name.split('.')[0]
 
     white_output = '{}_done_2.mp4'.format(video_name)
-    clip1 = VideoFileClip('{}.mp4'.format(video_name)).subclip(20, 25)
+    clip1 = VideoFileClip('{}.mp4'.format(video_name)).subclip(20, 21)
     warper.set_transforms(clip1.size)
     white_clip = clip1.fl_image(process_image)  # NOTE: this function expects color images!!
     white_clip.write_videofile(white_output, audio=False)
@@ -97,14 +97,12 @@ def show_image(fig, i, img, title, cmap=None):
 
 
 def add_lane_text(left_lane, right_lane, img):
-    cv2.putText(img, left_lane.solid, (10, 200),
+    height, width, depth = img.shape
+    cv2.putText(img, str(left_lane), (10, 200),
                 cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 4)
-    cv2.putText(img, right_lane.solid, (100, 200),
+    cv2.putText(img, str(right_lane), (width - 320, 200),
                 cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 4)
-    cv2.putText(img, left_lane.color, (10, 240),
-                cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 4)
-    cv2.putText(img, right_lane.color, (100, 240),
-                cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 4)
+
     return img
 
 if __name__ == '__main__':
