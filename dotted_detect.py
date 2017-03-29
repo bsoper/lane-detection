@@ -23,12 +23,14 @@ def detect_dotted(img):
     for c in cnts:
       # compute the center of the contour
       M = cv2.moments(c)
+      area = int(M['m00'])
+      if area == 0:
+        continue
       cX = int(M["m10"] / M["m00"])
       cY = int(M["m01"] / M["m00"])
-      area = int(M['m00'])
       # draw the contour and center of the shape on the image
 
-      if area > 1000:
+      if area > 2000:
         if cX > width / 2:
           counts['right'] += 1
           on_left = True
