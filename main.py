@@ -11,6 +11,7 @@ from undistorter import Undistorter
 from warper import Warper
 from lane import Lane
 from dotted_detect import detect_dotted
+from detect_color import detect_color
 
 undistorter = Undistorter()
 thresholder = Thresholder()
@@ -36,58 +37,58 @@ def process_image(base):
     
     fig = plt.figure(figsize=(10, 8))
     i = 1
-
     undistorted = undistorter.undistort(base)
     misc.imsave('output_images/undistorted.jpg', undistorted)
         # i = show_image(fig, i, undistorted, 'Undistorted', 'gray')
 
-    try:
-        img = thresholder.threshold(undistorted)
-        misc.imsave('output_images/thresholded.jpg', img)
-        # i = show_image(fig, i, img, 'Thresholded', 'gray')
+    #try:
+    img = thresholder.threshold(undistorted)
+    misc.imsave('output_images/thresholded.jpg', img)
+    # i = show_image(fig, i, img, 'Thresholded', 'gray')
 
-        img = warper.warp(img)
-        misc.imsave('output_images/warped.jpg', img)
-        warp_color = warper.warp(undistorted)
-        warp_color[(img == 0)] = 1
-        misc.imsave('output_images/warped_color.jpg', warp_color)
+    img = warper.warp(img)
+    misc.imsave('output_images/warped.jpg', img)
+    warp_color = warper.warp(undistorted)
+    warp_color[(img == 0)] = 0
+    misc.imsave('output_images/warped_color.jpg', warp_color)
 
-        # i = show_image(fig, i, img, 'Warped', 'gray')
+    # i = show_image(fig, i, img, 'Warped', 'gray')
 
-        left_lane, right_lane = detect_dotted('output_images/warped.jpg')
-        left_fit, right_fit = polyfitter.polyfit(img)
+    left_lane, right_lane = detect_dotted('output_images/warped.jpg')
+    detect_color('output_images/warped_color.jpg')
+    left_fit, right_fit = polyfitter.polyfit(img)
 
-        img = polydrawer.draw(undistorted, left_fit, right_fit, warper.Minv)
-        misc.imsave('output_images/final.jpg', img)
-        # show_image(fig, i, img, 'Final')
+    img = polydrawer.draw(undistorted, left_fit, right_fit, warper.Minv)
+    misc.imsave('output_images/final.jpg', img)
+    # show_image(fig, i, img, 'Final')
 
-        # plt.show()
-        # plt.get_current_fig_manager().frame.Maximize(True)
+    # plt.show()
+    # plt.get_current_fig_manager().frame.Maximize(True)
 
-        lane_curve, car_pos = polyfitter.measure_curvature(img)
+    lane_curve, car_pos = polyfitter.measure_curvature(img)
 
-        if car_pos > 0:
-            car_pos_text = '{}m right of center'.format(car_pos)
-        else:
-            car_pos_text = '{}m left of center'.format(abs(car_pos))
+    if car_pos > 0:
+        car_pos_text = '{}m right of center'.format(car_pos)
+    else:
+        car_pos_text = '{}m left of center'.format(abs(car_pos))
 
-        cv2.putText(img, "Lane curve: {}m".format(lane_curve.round()), (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1,
-                    color=(255, 255, 255), thickness=2)
-        cv2.putText(img, "Car is {}".format(car_pos_text), (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, color=(255, 255, 255),
-                    thickness=2)
+    cv2.putText(img, "Lane curve: {}m".format(lane_curve.round()), (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                color=(255, 255, 255), thickness=2)
+    cv2.putText(img, "Car is {}".format(car_pos_text), (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, color=(255, 255, 255),
+                thickness=2)
 
-        # Add lane information to image
-        img = add_lane_text(left_lane, right_lane, img)
+    # Add lane information to image
+    img = add_lane_text(left_lane, right_lane, img)
 
-        # show_image(fig, i, img, 'Final')
-        # plt.imshow(img)
-        # plt.show()
+    # show_image(fig, i, img, 'Final')
+    # plt.imshow(img)
+    # plt.show()
 
-        return img
-    except:
-        cv2.putText(undistorted, "EXCEPTION IN PROCESSING", (450, 340), cv2.FONT_HERSHEY_SIMPLEX, 1,
-                    color=(255, 0, 0), thickness=2)
-        return undistorted
+    return img
+    #except:
+    #    cv2.putText(undistorted, "EXCEPTION IN PROCESSING", (450, 340), cv2.FONT_HERSHEY_SIMPLEX, 1,
+    #                color=(255, 0, 0), thickness=2)
+    #    return undistorted
 
 
 def show_image(fig, i, img, title, cmap=None):
