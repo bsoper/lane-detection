@@ -17,6 +17,8 @@ thresholder = Thresholder()
 warper = Warper()
 polyfitter = Polyfitter()
 polydrawer = Polydrawer()
+last_id_left = Lane()
+last_id_right = Lane()
 
 
 def main(video_name='other_video'):
@@ -33,6 +35,8 @@ def main(video_name='other_video'):
 
 
 def process_image(base):
+    global last_id_right
+    global last_id_left
     
     fig = plt.figure(figsize=(10, 8))
     i = 1
@@ -52,8 +56,7 @@ def process_image(base):
         misc.imsave('output_images/warped_color.jpg', warp_color)
 
         # i = show_image(fig, i, img, 'Warped', 'gray')
-
-        left_lane, right_lane = analyze_lane_type('output_images/warped.jpg', 'output_images/warped_color.jpg')
+        left_lane, right_lane = analyze_lane_type('output_images/warped.jpg', 'output_images/warped_color.jpg', last_id_left, last_id_right)
         left_fit, right_fit = polyfitter.polyfit(img)
 
         img = polydrawer.draw(undistorted, left_fit, right_fit, warper.Minv)
@@ -77,6 +80,8 @@ def process_image(base):
 
         # Add lane information to image
         img = add_lane_text(left_lane, right_lane, img)
+        last_id_left = left_lane
+        last_id_right = right_lane
 
         # show_image(fig, i, img, 'Final')
         # plt.imshow(img)
@@ -84,6 +89,7 @@ def process_image(base):
 
         return img
     except:
+        undistorted = add_lane_text(last_id_left, last_id_right, undistorted)
         cv2.putText(undistorted, "EXCEPTION IN PROCESSING", (450, 340), cv2.FONT_HERSHEY_SIMPLEX, 1,
                     color=(255, 0, 0), thickness=2)
         return undistorted

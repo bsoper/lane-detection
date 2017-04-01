@@ -39,12 +39,16 @@ def detect_dotted(img):
     if counts['left'] > 1:
       left_solid = 'Dash'
     elif counts['left'] == 1:
-      left_solid= 'Solid'
+      left_solid = 'Solid'
+    else:
+      left_solid = -1
 
     if counts['right'] > 1:
       right_solid = 'Dash'
     elif counts['right'] == 1:
       right_solid = 'Solid'
+    else:
+      right_solid = -1
     
     return left_solid, right_solid
          
