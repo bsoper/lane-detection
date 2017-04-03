@@ -2,6 +2,10 @@ from lane import Lane
 from dotted_detect import detect_dotted
 from detect_color import detect_color
 
+class LaneTypeAnalysis:
+    def __init__(self):
+        pass
+
 def analyze_lane_type(img, img_color, last_id_left, last_id_right):
 	right_lane = Lane()
 	left_lane = Lane()

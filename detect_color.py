@@ -1,30 +1,29 @@
 import cv2
 import numpy as np
 from matplotlib import pyplot as plt
+
+from thresholder import Thresholder
 import imutils
 from lane import Lane
 
 
 def detect_color(img):
+    thresholder = Thresholder()
     img = cv2.imread(img, cv2.IMREAD_COLOR)
+    hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     height, width, pix_dim = img.shape
 
     left_side = img[:, 0:width / 2]
     right_side = img[:, width/2:]
 
-    left_all = left_side.reshape(-1, 3)
-    left_colors = left_all[np.sum(left_all, axis=1) > 100]
-    left_averages = np.mean(left_colors, axis=0)
+    yellow_left = thresholder.yellow_thresh(left_side)
+    white_left = thresholder.white_thresh(hsv_img)
 
-    right_all = right_side.reshape(-1, 3)
-    right_colors = right_all[np.sum(right_all, axis=1) > 100]
-    right_averages = np.mean(right_colors, axis=0)
+    yellow_right = thresholder.yellow_thresh(right_side)
+    white_right = thresholder.white_thresh(right_side)
 
-    left_norm = np.sum(np.square(left_averages - left_averages.mean()))
-    right_norm = np.sum(np.square(right_averages - right_averages.mean()))
-
-    left_color = ("White", "Yellow")[int(left_norm > 1000)]
-    right_color = ("White", "Yellow")[int(right_norm > 1000)]
+    left_color = ("White", "Yellow")[int(np.sum(white_left) < np.sum(yellow_left))]
+    right_color = ("White", "Yellow")[int(np.sum(white_right) < np.sum(yellow_right))]
 
     return left_color, right_color
 
