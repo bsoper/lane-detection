@@ -85,7 +85,7 @@ def process_image(base):
 
         return img
     except:
-        undistorted = add_lane_text(last_id_left, last_id_right, undistorted)
+        undistorted = add_lane_text(lane_type_analyzer.last_left, lane_type_analyzer.last_right, undistorted)
         cv2.putText(undistorted, "EXCEPTION IN PROCESSING", (450, 340), cv2.FONT_HERSHEY_SIMPLEX, 1,
                     color=(255, 0, 0), thickness=2)
         return undistorted
