@@ -29,7 +29,7 @@ def main(video_name='other_video'):
         video_name = video_name.split('.')[0]
 
     white_output = '{}_done_2.mp4'.format(video_name)
-    clip1 = VideoFileClip('{}.mp4'.format(video_name)).subclip(0, 5)
+    clip1 = VideoFileClip('{}.mp4'.format(video_name))#.subclip(0, 5)
     warper.set_transforms(clip1.size)
     white_clip = clip1.fl_image(process_image)  # NOTE: this function expects color images!!
     white_clip.write_videofile(white_output, audio=False)
@@ -81,7 +81,7 @@ def process_image(base):
                     thickness=2)
 
         # Add lane information to image
-        print (left_lane, right_lane)
+        #print (left_lane, right_lane)
         if (left_lane == last_id_left and right_lane == last_id_right):
             new_type_count = 0
         elif (new_type_count < 1):
