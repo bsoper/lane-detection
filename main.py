@@ -19,6 +19,7 @@ polyfitter = Polyfitter()
 polydrawer = Polydrawer()
 last_id_left = Lane()
 last_id_right = Lane()
+new_type_count = 0
 
 
 def main(video_name='other_video'):
@@ -37,6 +38,7 @@ def main(video_name='other_video'):
 def process_image(base):
     global last_id_right
     global last_id_left
+    global new_type_count
     
     fig = plt.figure(figsize=(10, 8))
     i = 1
@@ -79,9 +81,17 @@ def process_image(base):
                     thickness=2)
 
         # Add lane information to image
-        img = add_lane_text(left_lane, right_lane, img)
-        last_id_left = left_lane
-        last_id_right = right_lane
+        print (left_lane, right_lane)
+        if (left_lane == last_id_left and right_lane == last_id_right):
+            new_type_count = 0
+        elif (new_type_count < 1):
+            new_type_count += 1
+        else:    
+            last_id_left = left_lane
+            last_id_right = right_lane
+            new_type_count = 0
+
+        img = add_lane_text(last_id_left, last_id_right, img)
 
         # show_image(fig, i, img, 'Final')
         # plt.imshow(img)
