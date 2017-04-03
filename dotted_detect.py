@@ -5,7 +5,7 @@ import imutils
 from lane import Lane
 
 def detect_dotted(img):
-    img = cv2.imread(img,0)
+    #img = cv2.imread(img,0)
     median = cv2.medianBlur(img,11)
     edges = cv2.Canny(median,10,20)
     # im2, contours, hierarchy = cv2.findContours(median, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -15,8 +15,7 @@ def detect_dotted(img):
 
     # loop over the contours
     height, width = img.shape
-    counts = {'left': 0, 'right': 0}
-    on_left = True
+    count = 0
 
     for c in cnts:
       # compute the center of the contour
@@ -29,28 +28,16 @@ def detect_dotted(img):
       # draw the contour and center of the shape on the image
 
       if area > 2000:
-        if cX > width / 2:
-          counts['right'] += 1
-          on_left = True
-        else:
-          counts['left'] += 1
-          on_left = False
+          count += 1
 
-    if counts['left'] > 1:
-      left_solid = 'Dash'
-    elif counts['left'] == 1:
-      left_solid = 'Solid'
+    if count > 1:
+      solid_dash = 'Dash'
+    elif count == 1:
+      solid_dash = 'Solid'
     else:
-      left_solid = -1
-
-    if counts['right'] > 1:
-      right_solid = 'Dash'
-    elif counts['right'] == 1:
-      right_solid = 'Solid'
-    else:
-      right_solid = -1
+      solid_dash = -1
     
-    return left_solid, right_solid
+    return solid_dash
          
 
 if __name__ == '__main__':
