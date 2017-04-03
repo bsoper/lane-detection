@@ -3,6 +3,7 @@ import sys
 from matplotlib import pyplot as plt
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from scipy import misc
+import numpy as np
 
 from polydrawer import Polydrawer
 from polyfitter import Polyfitter
@@ -28,7 +29,7 @@ def main(video_name='other_video'):
     if video_name.endswith('.mp4'):
         video_name = video_name.split('.')[0]
 
-    white_output = '{}_done_2.mp4'.format(video_name)
+    white_output = '{}_done.mp4'.format(video_name)
     clip1 = VideoFileClip('{}.mp4'.format(video_name)).subclip(0, 5)
     warper.set_transforms(clip1.size)
     white_clip = clip1.fl_image(process_image)  # NOTE: this function expects color images!!
@@ -46,13 +47,17 @@ def process_image(base):
     misc.imsave('output_images/undistorted.jpg', undistorted)
         # i = show_image(fig, i, undistorted, 'Undistorted', 'gray')
 
+    undistorted = base
     try:
         img = thresholder.threshold(undistorted)
         misc.imsave('output_images/thresholded.jpg', img)
         # i = show_image(fig, i, img, 'Thresholded', 'gray')
-
         img = warper.warp(img)
+        
+        kernel = np.ones((np.ceil(img.shape[1]/40),np.ceil(img.shape[1]/40)),np.uint8)
+        img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
         misc.imsave('output_images/warped.jpg', img)
+
         warp_color = warper.warp(undistorted)
         warp_color[(img == 0)] = 0
         misc.imsave('output_images/warped_color.jpg', warp_color)
@@ -81,7 +86,6 @@ def process_image(base):
                     thickness=2)
 
         # Add lane information to image
-        print (left_lane, right_lane)
         if (left_lane == last_id_left and right_lane == last_id_right):
             new_type_count = 0
         elif (new_type_count < 1):
