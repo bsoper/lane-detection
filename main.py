@@ -47,7 +47,9 @@ def process_image(base):
     misc.imsave('output_images/undistorted.jpg', undistorted)
         # i = show_image(fig, i, undistorted, 'Undistorted', 'gray')
 
+    # Don't use the undistorted image because the calibration parameters are for a specific camera.
     undistorted = base
+
     try:
         img = thresholder.threshold(undistorted)
         misc.imsave('output_images/thresholded.jpg', img)
@@ -88,7 +90,7 @@ def process_image(base):
         # Add lane information to image
         if (left_lane == last_id_left and right_lane == last_id_right):
             new_type_count = 0
-        elif (new_type_count < 1):
+        elif (new_type_count < 2):
             new_type_count += 1
         else:    
             last_id_left = left_lane
