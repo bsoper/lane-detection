@@ -21,9 +21,10 @@ class Warper:
         try:
             src = np.load('data/src.npy')
             if src != self.src:
-                self.M = cv2.getPerspectiveTransform(src, dst)
-                self.Minv = cv2.getPerspectiveTransform(dst, src)      
-                self.src = src        
+                self.src = src
+                self.M = cv2.getPerspectiveTransform(self.src, dst)
+                self.Minv = cv2.getPerspectiveTransform(dst, self.src)      
+                        
         except:
             plt.imshow(img)
             src = np.float32([
@@ -34,11 +35,13 @@ class Warper:
                 ])    
             plt.hold
             plt.scatter(src[:,0],src[:,1],s=100,alpha=0.3)
-            self.src = plt.ginput(4)
+            self.src =  plt.ginput(4)
             plt.close()
-            self.M = cv2.getPerspectiveTransform(src, dst)
-            self.Minv = cv2.getPerspectiveTransform(dst, src)     
-
+            self.src = np.asarray(self.src,dtype=np.uint32)
+            self.src = np.float32(self.src)
+            self.M = cv2.getPerspectiveTransform(self.src, dst)
+            self.Minv = cv2.getPerspectiveTransform(dst, self.src)     
+            
     def warp(self, img):
         self.set_transforms(img)
         return cv2.warpPerspective(
