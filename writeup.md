@@ -99,3 +99,10 @@ The implementation overall went pretty smoothly.
 It might fail in extreme lighting conditions or in countries with lanes line colors different than white and yellow, or if they are not well visually defined (worn out or missing).
 
 I could make it more robust by handling more lightning conditions and lane line colors, and also by adding recovery options in case I dont detect any lane line, or if they differ too much from the previously detected lines.
+
+---
+
+### Our Additions
+
+We added color detection. This takes a color version of the warped image and applies a binary mask from the black and white version. Then we split the image in half, vertically and average the non-zero rgb values from each side. We determine if this average is yellow or white by looking at the difference between each value and the average of the three. White, and various forms of gray, will have all three values very close to each other. Yellow has the blue value much lower than the others, so this is a fairly robust method for determining yellow vs white. 
+
