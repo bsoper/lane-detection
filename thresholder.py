@@ -30,24 +30,35 @@ class Thresholder:
 
         return binary_output
 
+    def yellow_thresh(self, hsv_img):
+        yellow_min = np.array([15, 100, 120], np.uint8)
+        yellow_max = np.array([80, 255, 255], np.uint8)
+        yellow_mask = cv2.inRange(hsv_img, yellow_min, yellow_max)
+
+        binary_output = np.zeros_like(hsv_img[:, :, 0])
+        binary_output[yellow_mask != 0] = 1
+
+        return binary_output
+
+    def white_thresh(self, hsv_img):
+        white_min = np.array([0, 0, 200], np.uint8)
+        white_max = np.array([255, 30, 255], np.uint8)
+        white_mask = cv2.inRange(hsv_img, white_min, white_max)
+
+        binary_output = np.zeros_like(hsv_img[:, :, 0])
+        binary_output[white_mask != 0] = 1
+
+        return binary_output
+
     def color_thresh(self, img):
         img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
 
-        yellow_min = np.array([15, 100, 120], np.uint8)
-        yellow_max = np.array([80, 255, 255], np.uint8)
-        yellow_mask = cv2.inRange(img, yellow_min, yellow_max)
+        base = self.yellow_thresh(img)
+        white = self.white_thresh(img)
 
-        white_min = np.array([0, 0, 200], np.uint8)
-        white_max = np.array([255, 30, 255], np.uint8)
-        white_mask = cv2.inRange(img, white_min, white_max)
+        base[white == 1] = 1
 
-        binary_output = np.zeros_like(img[:, :, 0])
-        binary_output[((yellow_mask != 0) | (white_mask != 0))] = 1
-
-        filtered = img
-        filtered[((yellow_mask == 0) & (white_mask == 0))] = 0
-
-        return binary_output
+        return base
 
     def threshold(self, img):
         sobelx = cv2.Sobel(img[:, :, 2], cv2.CV_64F, 1, 0, ksize=self.sobel_kernel)
