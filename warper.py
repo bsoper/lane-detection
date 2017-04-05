@@ -1,32 +1,46 @@
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt 
 
 
 class Warper:
-    #def __init__(self):
-
-    def set_transforms(self, video_size):
-        ratio_x = video_size[0] / 1280
-        ratio_y = video_size[1] / 720
-
-        src = np.float32([
-            [580 * ratio_x, 460 * ratio_y],
-            [700 * ratio_x, 460 * ratio_y],
-            [1040 * ratio_x, 680 * ratio_y],
-            [260 * ratio_x, 680 * ratio_y],
-        ])
-
+    def __init__(self):
+        self.src = None
+        
+            
+    def set_transforms(self,img):
+        ratio_x = img.shape[1] / 1280
+        ratio_y = img.shape[0] / 720   
+                
         dst = np.float32([
             [260 * ratio_x, 0 * ratio_y],
             [1040 * ratio_x, 0 * ratio_y],
             [1040 * ratio_x, 720 * ratio_y],
             [260 * ratio_x, 720 * ratio_y],
-        ])
-
-        self.M = cv2.getPerspectiveTransform(src, dst)
-        self.Minv = cv2.getPerspectiveTransform(dst, src)
+            ]) 
+        try:
+            src = np.load('data/src.npy')
+            if src != self.src:
+                self.M = cv2.getPerspectiveTransform(src, dst)
+                self.Minv = cv2.getPerspectiveTransform(dst, src)      
+                self.src = src        
+        except:
+            plt.imshow(img)
+            src = np.float32([
+                [580 * ratio_x, 460 * ratio_y],
+                [700 * ratio_x, 460 * ratio_y],
+                [1040 * ratio_x, 680 * ratio_y],
+                [260 * ratio_x, 680 * ratio_y],
+                ])    
+            plt.hold
+            plt.scatter(src[:,0],src[:,1],s=100,alpha=0.3)
+            self.src = plt.ginput(4)
+            plt.close()
+            self.M = cv2.getPerspectiveTransform(src, dst)
+            self.Minv = cv2.getPerspectiveTransform(dst, src)     
 
     def warp(self, img):
+        self.set_transforms(img)
         return cv2.warpPerspective(
             img,
             self.M,
@@ -35,6 +49,7 @@ class Warper:
         )
 
     def unwarp(self, img):
+        self.set_transforms(img)
         return cv2.warpPersective(
             img,
             self.Minv,
