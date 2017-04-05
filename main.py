@@ -19,7 +19,6 @@ polydrawer = Polydrawer()
 lane_type_analyzer = LaneTypeAnalysis()
 
 
-
 def main(video_name='other_video'):
     # video = 'harder_challenge_video'
     # video = 'challenge_video'
@@ -27,14 +26,14 @@ def main(video_name='other_video'):
         video_name = video_name.rsplit('.', 1)[0]
 
     white_output = '{}_done_2.mp4'.format(video_name)
-    clip1 = VideoFileClip('{}.mp4'.format(video_name)).subclip(20, 21)
+    clip1 = VideoFileClip('{}.mp4'.format(video_name)).subclip(0, 5)
     warper.set_transforms(clip1.size)
     white_clip = clip1.fl_image(process_image)  # NOTE: this function expects color images!!
     white_clip.write_videofile(white_output, audio=False)
 
 
 def process_image(base):
-
+    
     fig = plt.figure(figsize=(10, 8))
     i = 1
     undistorted = undistorter.undistort(base)
@@ -76,9 +75,8 @@ def process_image(base):
                     thickness=2)
 
         # Add lane information to image
-
         img = add_lane_text(left_lane, right_lane, img)
-        # Add lane information to image
+
         # show_image(fig, i, img, 'Final')
         # plt.imshow(img)
         # plt.show()
