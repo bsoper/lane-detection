@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 class Warper:
     def __init__(self):
-        self.src = None
+        self.src = []
         
             
     def set_transforms(self,img):
@@ -33,8 +33,9 @@ class Warper:
                 [1040 * ratio_x, 680 * ratio_y],
                 [260 * ratio_x, 680 * ratio_y],
                 ])    
-            plt.hold
             plt.scatter(src[:,0],src[:,1],s=100,alpha=0.3)
+             plt.title('Select four trapezoidal lane points \n starting from top left corner in clockwise manner') 
+
             self.src =  plt.ginput(4)
             plt.close()
             self.src = np.asarray(self.src,dtype=np.uint32)
