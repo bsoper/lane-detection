@@ -9,21 +9,21 @@ from polyfitter import Polyfitter
 from thresholder import Thresholder
 from undistorter import Undistorter
 from warper import Warper
-from lane import Lane
-from analyze_lane_type import analyze_lane_type
+from analyze_lane_type import LaneTypeAnalysis
 
 undistorter = Undistorter()
 thresholder = Thresholder()
 warper = Warper()
 polyfitter = Polyfitter()
 polydrawer = Polydrawer()
+lane_type_analyzer = LaneTypeAnalysis()
 
 
 def main(video_name='other_video'):
     # video = 'harder_challenge_video'
     # video = 'challenge_video'
     if video_name.endswith('.mp4'):
-        video_name = video_name.split('.')[0]
+        video_name = video_name.rsplit('.', 1)[0]
 
     white_output = '{}_done_2.mp4'.format(video_name)
     clip1 = VideoFileClip('{}.mp4'.format(video_name)).subclip(0, 5)
@@ -52,8 +52,7 @@ def process_image(base):
         misc.imsave('output_images/warped_color.jpg', warp_color)
 
         # i = show_image(fig, i, img, 'Warped', 'gray')
-
-        left_lane, right_lane = analyze_lane_type('output_images/warped.jpg', 'output_images/warped_color.jpg')
+        left_lane, right_lane = lane_type_analyzer.get_lane_type('output_images/warped.jpg', 'output_images/warped_color.jpg')
         left_fit, right_fit = polyfitter.polyfit(img)
 
         img = polydrawer.draw(undistorted, left_fit, right_fit, warper.Minv)
@@ -84,10 +83,10 @@ def process_image(base):
 
         return img
     except:
+        undistorted = add_lane_text(lane_type_analyzer.last_left, lane_type_analyzer.last_right, undistorted)
         cv2.putText(undistorted, "EXCEPTION IN PROCESSING", (450, 340), cv2.FONT_HERSHEY_SIMPLEX, 1,
                     color=(255, 0, 0), thickness=2)
         return undistorted
-
 
 def show_image(fig, i, img, title, cmap=None):
     a = fig.add_subplot(2, 2, i)
