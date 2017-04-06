@@ -16,12 +16,12 @@ class LaneTypeAnalysis:
         left_lane = Lane()
 
         left_lane.color, right_lane.color = detect_color(color_img)
-        left_lane, right_lane = detect_dotted(img, left_lane, right_lane)
+        left_lane, right_lane, left_centers, right_centers = detect_dotted(img, left_lane, right_lane)
         #print (right_lane.single)
 
         # handle errors
         if left_lane != self.last_left:
-            if self.new_count_left >= 2 or self.first_frame:
+            if self.new_count_left >= 5 or self.first_frame:
                 self.last_left = left_lane
                 self.new_count_left = 0
             else:
@@ -30,7 +30,7 @@ class LaneTypeAnalysis:
         else:
             self.new_count_left = 0
         if right_lane != self.last_right:
-            if self.new_count_right >= 2 or self.first_frame:
+            if self.new_count_right >= 5 or self.first_frame:
                 self.last_right = right_lane
                 self.new_count_right = 0
                 self.first_frame = False
@@ -40,4 +40,4 @@ class LaneTypeAnalysis:
         else:
             self.new_count_right = 0
 
-        return left_lane, right_lane
+        return left_lane, right_lane, left_centers, right_centers
