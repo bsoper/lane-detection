@@ -20,7 +20,7 @@ class Warper:
             ]) 
         try:
             src = np.load('data/src.npy')
-            if src != self.src:
+            if (src != self.src).any():
                 self.src = src
                 self.M = cv2.getPerspectiveTransform(self.src, dst)
                 self.Minv = cv2.getPerspectiveTransform(dst, self.src)      
@@ -34,11 +34,12 @@ class Warper:
                 [260 * ratio_x, 680 * ratio_y],
                 ])    
             plt.scatter(src[:,0],src[:,1],s=100,alpha=0.3)
-             plt.title('Select four trapezoidal lane points \n starting from top left corner in clockwise manner') 
-
+            plt.title('Select four trapezoidal lane points \n starting from top left corner in clockwise manner') 
             self.src =  plt.ginput(4)
             plt.close()
             self.src = np.asarray(self.src,dtype=np.uint32)
+            self.src[0:2,1] = (self.src[0,1] + self.src[1,1])/2
+            self.src[2:4,1] = (self.src[2,1] + self.src[3,1])/2
             self.src = np.float32(self.src)
             self.M = cv2.getPerspectiveTransform(self.src, dst)
             self.Minv = cv2.getPerspectiveTransform(dst, self.src)     
