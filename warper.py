@@ -6,33 +6,41 @@ import matplotlib.pyplot as plt
 class Warper:
     def __init__(self):
         self.src = []
+        self.ratio = []
         
-            
+        
+    def check_src():
+        if self.src[2,0]<= self.ratio[0,0] * 1280:
+            temp = self.src[2,0]
+            #self.src[2,0] = 
+                
     def set_transforms(self,img):
-        ratio_x = img.shape[1] / 1280
-        ratio_y = img.shape[0] / 720   
+        self.ratio = np.float32([[img.shape[1] / 1280,0],[0,img.shape[0] / 720]])   
                 
         dst = np.float32([
-            [260 * ratio_x, 0 * ratio_y],
-            [1040 * ratio_x, 0 * ratio_y],
-            [1040 * ratio_x, 720 * ratio_y],
-            [260 * ratio_x, 720 * ratio_y],
-            ]) 
+            [260 , 0],
+            [1040 , 0],
+            [1040 , 720],
+            [260 , 720],
+            ])
+        dst = np.matmul(dst,self.ratio)  
         try:
             src = np.load('data/src.npy')
             if (src != self.src).any():
                 self.src = src
+                self.check_src()
                 self.M = cv2.getPerspectiveTransform(self.src, dst)
                 self.Minv = cv2.getPerspectiveTransform(dst, self.src)      
                         
         except:
             plt.imshow(img)
             src = np.float32([
-                [580 * ratio_x, 460 * ratio_y],
-                [700 * ratio_x, 460 * ratio_y],
-                [1040 * ratio_x, 680 * ratio_y],
-                [260 * ratio_x, 680 * ratio_y],
+                [580 , 460],
+                [700 , 460],
+                [1040, 680],
+                [260 , 680],
                 ])    
+            src = np.matmul(src,self.ratio)
             plt.scatter(src[:,0],src[:,1],s=100,alpha=0.3)
             plt.title('Select four trapezoidal lane points \n starting from top left corner in clockwise manner') 
             self.src =  plt.ginput(4)
@@ -43,6 +51,7 @@ class Warper:
             self.src = np.float32(self.src)
             self.M = cv2.getPerspectiveTransform(self.src, dst)
             self.Minv = cv2.getPerspectiveTransform(dst, self.src)     
+            np.save('data/src.npy',self.src)
             
     def warp(self, img):
         self.set_transforms(img)
