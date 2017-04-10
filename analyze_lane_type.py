@@ -10,13 +10,22 @@ class LaneTypeAnalysis:
         self.last_left = Lane()
         self.last_right = Lane()
         self.first_frame = True
+        self.left_mask = None
+        self.right_mask = None
 
     def get_lane_type(self, img, color_img):
         right_lane = Lane()
         left_lane = Lane()
 
         left_lane.color, right_lane.color = detect_color(color_img)
-        left_lane, right_lane, left_centers, right_centers = detect_dotted(img, left_lane, right_lane)
+        left_lane, right_lane, left_centers, right_centers, l_mask, r_mask = detect_dotted(img,
+                                                                                           left_lane,
+                                                                                           right_lane,
+                                                                                           self.left_mask,
+                                                                                           self.right_mask)
+
+        self.left_mask = l_mask
+        self.right_mask = r_mask
         #print (right_lane.single)
 
         # handle errors
