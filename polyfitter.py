@@ -13,26 +13,6 @@ class Polyfitter:
         # if self.left_fit is None:
         return self.polyfit_sliding(img)
 
-        nonzero = img.nonzero()
-        nonzeroy = np.array(nonzero[0])
-        nonzerox = np.array(nonzero[1])
-        margin = 100
-        left_lane_inds = (
-        (nonzerox > (self.left_fit[0] * (nonzeroy ** 2) + self.left_fit[1] * nonzeroy + self.left_fit[2] - margin)) & (
-        nonzerox < (self.left_fit[0] * (nonzeroy ** 2) + self.left_fit[1] * nonzeroy + self.left_fit[2] + margin)))
-        right_lane_inds = (
-        (nonzerox > (self.right_fit[0] * (nonzeroy ** 2) + self.right_fit[1] * nonzeroy + self.right_fit[2] - margin)) & (
-        nonzerox < (self.right_fit[0] * (nonzeroy ** 2) + self.right_fit[1] * nonzeroy + self.right_fit[2] + margin)))
-
-        self.leftx = nonzerox[left_lane_inds]
-        lefty = nonzeroy[left_lane_inds]
-        self.rightx = nonzerox[right_lane_inds]
-        righty = nonzeroy[right_lane_inds]
-        self.left_fit = np.polyfit(lefty, self.leftx, 2)
-        self.right_fit = np.polyfit(righty, self.rightx, 2)
-
-        return self.left_fit, self.right_fit
-
     def polyfit_sliding(self, img):
         histogram = np.sum(img[int(img.shape[0] / 2):, :], axis=0)
         out_img = np.dstack((img, img, img)) * 255
