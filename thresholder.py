@@ -31,7 +31,8 @@ class Thresholder:
         return binary_output
 
     def yellow_thresh(self, hsv_img):
-        yellow_min = np.array([15, 100, 120], np.uint8)
+        #yellow_min = np.array([15, 100, 120], np.uint8)
+        yellow_min = np.array([15, 80, 80], np.uint8)
         yellow_max = np.array([80, 255, 255], np.uint8)
         yellow_mask = cv2.inRange(hsv_img, yellow_min, yellow_max)
 
@@ -41,8 +42,10 @@ class Thresholder:
         return binary_output
 
     def white_thresh(self, hsv_img):
-        white_min = np.array([0, 0, 200], np.uint8)
+        white_min = np.array([0, 0, 150], np.uint8)
+        #white_max = np.array([255, 30, 255], np.uint8)
         white_max = np.array([255, 30, 255], np.uint8)
+
         white_mask = cv2.inRange(hsv_img, white_min, white_max)
 
         binary_output = np.zeros_like(hsv_img[:, :, 0])
@@ -69,6 +72,8 @@ class Thresholder:
         color = self.color_thresh(img)
 
         combined = np.zeros_like(direc)
-        combined[((color == 1) & ((mag == 1) | (direc == 1)))] = 1
+        #combined[((color == 1) & ((mag == 1) | (direc == 1)))] = 1
+        combined[((color == 1))] = 1
+
 
         return combined
