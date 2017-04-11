@@ -21,7 +21,7 @@ class LaneTypeAnalysis:
 
         # handle errors
         if left_lane != self.last_left:
-            if self.new_count_left >= 5 or self.first_frame:
+            if self.new_count_left >= 30 or self.first_frame:
                 self.last_left = left_lane
                 self.new_count_left = 0
             else:
@@ -30,7 +30,7 @@ class LaneTypeAnalysis:
         else:
             self.new_count_left = 0
         if right_lane != self.last_right:
-            if self.new_count_right >= 5 or self.first_frame:
+            if self.new_count_right >= 30 or self.first_frame:
                 self.last_right = right_lane
                 self.new_count_right = 0
                 self.first_frame = False
