@@ -26,6 +26,7 @@ def detect_dotted(img, left_lane, right_lane):
     ratio = left_width / right_width
     left_lane.single = 'Single'
     right_lane.single = 'Single'
+
     if ratio > 1.5:
         left_lane.single  = 'Double'
     elif ratio < 0.666:
@@ -57,16 +58,26 @@ def detect_dotted_side(img):
     lane_info = []
     num_zero = 0
 
-    for i in range(100):
+    for i in range(100): #range(top_img_nonzero, height):
         index = randint(top_img_nonzero,height-1)
+        # filter_indices = np.where(img[index,:] > 50)[0]
+        # start = 0
+        # for i in range(len(filter_indices)):
+        #     if abs(filter_indices[i] - filter_indices[i - 1]) > 3:
+        #         start = filter_indices[i]
+
+
+        trim_right = np.trim_zeros(img[index,:], trim='b')
         trimmed = np.trim_zeros(img[index,:])
+        shift = len(trim_right) - len(trimmed)
         filter_indices = np.where(trimmed > 50)[0]
         trimmed = trimmed[filter_indices]
         lane_width = trimmed.shape[0]
         if lane_width < 5:
             num_zero += 1
         else:
-            center_x = (filter_indices[0] + filter_indices[-1]) / 2
+            #print (filter_indices[0], filter_indices[-1])
+            center_x = ((filter_indices[0] + filter_indices[-1]) / 2) + shift
             lane_info.append(((center_x, index), lane_width))
     
     return ("Dash", "Solid")[int(num_zero < 25)], lane_info
