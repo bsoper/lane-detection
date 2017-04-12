@@ -4,7 +4,6 @@ from matplotlib import pyplot as plt
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from scipy import misc
 import numpy as np
-import os
 
 from polydrawer import Polydrawer
 from polyfitter import Polyfitter
@@ -35,7 +34,6 @@ def main(video_name='other_video'):
     clip1 = VideoFileClip('{}.mp4'.format(video_name))#.subclip(0, 5)
     white_clip = clip1.fl_image(process_image)  # NOTE: this function expects color images!!
     white_clip.write_videofile(white_output, audio=False)
-    os.remove('data/src.npy')
 
 
 def process_image(base):
@@ -98,7 +96,7 @@ def process_image(base):
         # show_image(fig, i, img, 'Final')
         # plt.imshow(img)
         # plt.show()
-
+        set_src(left_fit,right_fit,img.shape[0])
         return img
     except:
         if (lane_type_analyzer.left_fit != None and lane_type_analyzer.right_fit != None):
@@ -136,6 +134,48 @@ def add_lane_text(left_lane, right_lane, img):
                 cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 4)
 
     return img
+
+def set_src(left,right,height):
+# Initialize
+    fity = np.float32([0,height])
+    dst = warper.dst
+    change = False 
+
+#Polyfit method:
+    left = left[::-1]
+    right = right[::-1]
+    left_fit = np.zeros(4)
+    left_fit[0:left.size] = left
+    right_fit = np.zeros(4)
+    right_fit[0:right.size] = right     
+    left_x = left_fit[3] * fity ** 3 + left_fit[2] * fity ** 2 + left_fit[1] * fity + left_fit[0]
+    right_x = right_fit[3] * fity ** 3 + right_fit[2] * fity ** 2 + right_fit[1] * fity + right_fit[0]
+
+#Splinefit method
+#    left_x = left(fity)
+#    right_x = right(fity)
+#Bottom points adjusting:
+    if np.isfinite(left_x[1]) and warper.ratio[0,0]*700 > abs(left_x[1] - dst[3,0]) > warper.ratio[0,0]*50:
+        dst[3,0] = left_x[1]
+        change = True
+    if np.isfinite(right_x[1]) and warper.ratio[0,0]*700 > abs(right_x[1] - dst[2,0]) > warper.ratio[0,0]*50:
+        dst[2,0] = right_x[1]
+        change = True
+
+#Top points adjusting:
+    if np.isfinite(left_x[0]) and warper.ratio[0,0]*200 < abs(left_x[0] - dst[0,0]) < warper.ratio[0,0]*420:
+        dst[0,0] = left_x[0]
+        change = True
+    if np.isfinite(right_x[0]) and warper.ratio[0,0]*200 < abs(right_x[0] - dst[1,0]) < warper.ratio[0,0]*420:
+        dst[1,0] = right_x[0]
+        change = True
+        
+#Src point update
+    if change:
+        warper.src_n = cv2.perspectiveTransform(np.array([dst]),warper.Minv)
+        print('changed src '+ np.array_str(dst))
+        warper.src_n = np.squeeze(np.asarray(warper.src_n))
+
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
