@@ -28,7 +28,7 @@ def main(video_name='other_video'):
         video_name = video_name.rsplit('.', 1)[0]
 
     white_output = '{}_done_2.mp4'.format(video_name)
-    clip1 = VideoFileClip('{}.mp4'.format(video_name))#.subclip(0, 5)
+    clip1 = VideoFileClip('{}.mp4'.format(video_name))#.subclip(3, 12)
     white_clip = clip1.fl_image(process_image)  # NOTE: this function expects color images!!
     white_clip.write_videofile(white_output, audio=False)
     os.remove('data/src.npy')
@@ -64,6 +64,8 @@ def process_image(base):
 
         img = polydrawer.draw(undistorted, left_fit, right_fit, warper.Minv)
         misc.imsave('output_images/final.jpg', img)
+        lane_type_analyzer.update_polyfit_coeff(left_fit, right_fit)
+
         # show_image(fig, i, img, 'Final')
 
         # plt.show()
@@ -90,10 +92,12 @@ def process_image(base):
 
         return img
     except:
-        undistorted = add_lane_text(lane_type_analyzer.last_left, lane_type_analyzer.last_right, undistorted)
-        cv2.putText(undistorted, "EXCEPTION IN PROCESSING", (450, 340), cv2.FONT_HERSHEY_SIMPLEX, 1,
+        if (lane_type_analyzer.left_fit != None and lane_type_analyzer.right_fit != None):
+            undistorted = polydrawer.draw(undistorted, lane_type_analyzer.left_fit, lane_type_analyzer.right_fit, warper.Minv)
+        img = add_lane_text(lane_type_analyzer.last_left, lane_type_analyzer.last_right, undistorted)
+        cv2.putText(img, "EXCEPTION IN PROCESSING", (450, 340), cv2.FONT_HERSHEY_SIMPLEX, 1,
                     color=(255, 0, 0), thickness=2)
-        return undistorted
+        return img
 
 def show_image(fig, i, img, title, cmap=None):
     a = fig.add_subplot(2, 2, i)

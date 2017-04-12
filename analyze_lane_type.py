@@ -1,6 +1,7 @@
 from lane import Lane
 from dotted_detect import detect_dotted
 from detect_color import detect_color
+import numpy as np
 
 
 class LaneTypeAnalysis:
@@ -10,6 +11,8 @@ class LaneTypeAnalysis:
         self.last_left = Lane()
         self.last_right = Lane()
         self.first_frame = True
+        self.left_fit = None
+        self.right_fit = None
 
     def get_lane_type(self, img, color_img):
         right_lane = Lane()
@@ -41,3 +44,7 @@ class LaneTypeAnalysis:
             self.new_count_right = 0
 
         return left_lane, right_lane, left_centers, right_centers
+
+    def update_polyfit_coeff(self, left_fit, right_fit):
+        self.left_fit = left_fit
+        self.right_fit = right_fit
