@@ -13,7 +13,7 @@ from undistorter import Undistorter
 from warper import Warper
 from analyze_lane_type import LaneTypeAnalysis
 
-from dotted_detect import filter_image
+from image_filtering import filter_image, verify_image_filter
 
 undistorter = Undistorter()
 thresholder = Thresholder()
@@ -56,6 +56,7 @@ def process_image(base):
         img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
 
         global image_filter
+        image_filter = verify_image_filter(image_filter)
         img, image_filter = filter_image(img, image_filter)
 
         misc.imsave('output_images/warped.jpg', img)
