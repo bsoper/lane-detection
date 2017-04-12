@@ -15,8 +15,8 @@ def detect_dotted(img, left_lane, right_lane, left_side_mask, right_side_mask):
     left_side = img[:, 0:width / 2]
     right_side = img[:, width / 2:]
 
-    left_side, left_side_mask = filter_image(left_side, left_side_mask)
-    right_side, right_side_mask = filter_image(right_side, right_side_mask)
+    # left_side, left_side_mask = filter_image(left_side, left_side_mask)
+    # right_side, right_side_mask = filter_image(right_side, right_side_mask)
 
     left_lane.solid, left_lane_info = detect_dotted_side(left_side)
     # left_lane_info = filter_lane_info(left_lane_info)
@@ -56,7 +56,8 @@ def filter_lane_info(lane_info):
 
 
 def filter_image(img, old_mask=None):
-    vertical_sum = np.sum(img, axis=0) / (255 * np.shape(img)[0])
+    amount = 1.0 if img.max() == 1.0 else 255.0
+    vertical_sum = np.sum(img, axis=0) / (amount * np.shape(img)[0])
 
     threshold_mask = np.asarray([int(val) for val in vertical_sum > 0.03])
     if old_mask is not None:
