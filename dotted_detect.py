@@ -8,15 +8,12 @@ import sys
 from random import randint
 
 
-def detect_dotted(img, left_lane, right_lane, left_side_mask, right_side_mask):
+def detect_dotted(img, left_lane, right_lane):
     img = cv2.imread(img, cv2.IMREAD_GRAYSCALE)
     height, width = img.shape
 
     left_side = img[:, 0:width / 2]
     right_side = img[:, width / 2:]
-
-    # left_side, left_side_mask = filter_image(left_side, left_side_mask)
-    # right_side, right_side_mask = filter_image(right_side, right_side_mask)
 
     left_lane.solid, left_lane_info = detect_dotted_side(left_side)
     # left_lane_info = filter_lane_info(left_lane_info)
@@ -37,8 +34,7 @@ def detect_dotted(img, left_lane, right_lane, left_side_mask, right_side_mask):
     left_centers = [info[0] for info in left_lane_info]
     right_centers = [info[0] for info in right_lane_info]
 
-    return left_lane, right_lane, left_centers, right_centers, left_side_mask, right_side_mask
-
+    return left_lane, right_lane, left_centers, right_centers
 
 def calculate_lane_width(lane_info):
     widths = [info[1] for info in lane_info]
@@ -53,7 +49,6 @@ def filter_lane_info(lane_info):
     filtered = [info for info in lane_info if abs(center_initial - info[0][0]) < thresh]
     #print (center_initial, thresh)
     return filtered
-
 
 def detect_dotted_side(img):
     height, width = img.shape
