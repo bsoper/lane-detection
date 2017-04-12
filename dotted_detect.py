@@ -16,11 +16,11 @@ def detect_dotted(img, left_lane, right_lane):
     right_side = img[:, width / 2:]
 
     left_lane.solid, left_lane_info = detect_dotted_side(left_side)
-    left_lane_info = filter_lane_info(left_lane_info)
+    # left_lane_info = filter_lane_info(left_lane_info)
     left_width = calculate_lane_width(left_lane_info)
     right_lane.solid, right_lane_info = detect_dotted_side(right_side)
     #print (filter_lane_info(left_lane_info))
-    right_lane_info = filter_lane_info(right_lane_info)
+    # right_lane_info = filter_lane_info(right_lane_info)
     right_width = calculate_lane_width(right_lane_info)
 
     ratio = left_width / right_width

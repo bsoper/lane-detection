@@ -13,12 +13,16 @@ from undistorter import Undistorter
 from warper import Warper
 from analyze_lane_type import LaneTypeAnalysis
 
+from image_filtering import filter_image, verify_image_filter
+
 undistorter = Undistorter()
 thresholder = Thresholder()
 warper = Warper()
 polyfitter = Polyfitter()
 polydrawer = Polydrawer()
 lane_type_analyzer = LaneTypeAnalysis()
+
+image_filter = None
 
 
 def main(video_name='other_video'):
@@ -28,7 +32,7 @@ def main(video_name='other_video'):
         video_name = video_name.rsplit('.', 1)[0]
 
     white_output = '{}_done_2.mp4'.format(video_name)
-    clip1 = VideoFileClip('{}.mp4'.format(video_name))#.subclip(3, 12)
+    clip1 = VideoFileClip('{}.mp4'.format(video_name))#.subclip(0, 5)
     white_clip = clip1.fl_image(process_image)  # NOTE: this function expects color images!!
     white_clip.write_videofile(white_output, audio=False)
     os.remove('data/src.npy')
@@ -50,6 +54,11 @@ def process_image(base):
         img = warper.warp(img)
         kernel = np.ones((np.ceil(img.shape[1]/40),np.ceil(img.shape[1]/40)),np.uint8)
         img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
+
+        global image_filter
+        image_filter = verify_image_filter(image_filter)
+        img, image_filter = filter_image(img, image_filter)
+
         misc.imsave('output_images/warped.jpg', img)
         warp_color = warper.warp(undistorted)
         warp_color[(img == 0)] = 0

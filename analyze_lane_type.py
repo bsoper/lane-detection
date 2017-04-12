@@ -20,6 +20,7 @@ class LaneTypeAnalysis:
 
         left_lane.color, right_lane.color = detect_color(color_img)
         left_lane, right_lane, left_centers, right_centers = detect_dotted(img, left_lane, right_lane)
+
         #print (right_lane.single)
 
         # handle errors
