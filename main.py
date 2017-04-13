@@ -172,9 +172,14 @@ def set_src(left,right,height):
         
 #Src point update
     if change:
-        warper.src_n = cv2.perspectiveTransform(np.array([dst]),warper.Minv)
-        print('changed src '+ np.array_str(dst))
-        warper.src_n = np.squeeze(np.asarray(warper.src_n))
+        src_n = cv2.perspectiveTransform(np.array([dst]),warper.Minv)
+        src_n = np.squeeze(np.asarray(src_n))
+        trap_area = ((src_n[1, 0] - src_n[0, 0]) + (src_n[2, 0] - src_n[3, 0])) \
+                    * (src_n[2, 1] - src_n[1, 1]) / 2
+        if abs(trap_area - warper.trap_area) < 0.3 * warper.trap_area:
+            print('changed src ')
+            print(np.array_str(src_n))
+            warper.src_n = src_n
 
 
 if __name__ == '__main__':
