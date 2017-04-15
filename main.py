@@ -136,50 +136,49 @@ def add_lane_text(left_lane, right_lane, img):
     return img
 
 def set_src(left,right,height):
-# Initialize
-    fity = np.float32([0,height])
-    dst = warper.dst
-    change = False 
+    # Initialize
+    fity = np.float32([0, height])
+    dst = np.copy(warper.dst)
+    change = False
 
-#Polyfit method:
+    # Polyfit method:
     left = left[::-1]
     right = right[::-1]
     left_fit = np.zeros(4)
     left_fit[0:left.size] = left
     right_fit = np.zeros(4)
-    right_fit[0:right.size] = right     
+    right_fit[0:right.size] = right
     left_x = left_fit[3] * fity ** 3 + left_fit[2] * fity ** 2 + left_fit[1] * fity + left_fit[0]
     right_x = right_fit[3] * fity ** 3 + right_fit[2] * fity ** 2 + right_fit[1] * fity + right_fit[0]
 
-#Splinefit method
-#    left_x = left(fity)
-#    right_x = right(fity)
-#Bottom points adjusting:
-    if np.isfinite(left_x[1]) and warper.ratio[0,0]*700 > abs(left_x[1] - dst[3,0]) > warper.ratio[0,0]*50:
-        dst[3,0] = left_x[1]
+    # Splinefit method
+    #    left_x = left(fity)
+    #    right_x = right(fity)
+    # Bottom points adjusting:
+    if np.isfinite(left_x[1]) and warper.ratio[0, 0] * 500 > abs(left_x[1] - dst[3, 0]) > warper.ratio[0, 0] * 50:
+        dst[3, 0] = left_x[1]
         change = True
-    if np.isfinite(right_x[1]) and warper.ratio[0,0]*700 > abs(right_x[1] - dst[2,0]) > warper.ratio[0,0]*50:
-        dst[2,0] = right_x[1]
+    if np.isfinite(right_x[1]) and warper.ratio[0, 0] * 500 > abs(right_x[1] - dst[2, 0]) > warper.ratio[0, 0] * 50:
+        dst[2, 0] = right_x[1]
         change = True
 
-#Top points adjusting:
-    if np.isfinite(left_x[0]) and warper.ratio[0,0]*200 < abs(left_x[0] - dst[0,0]) < warper.ratio[0,0]*420:
-        dst[0,0] = left_x[0]
+    # Top points adjusting:
+    if np.isfinite(left_x[0]) and warper.ratio[0, 0] * 150 < abs(left_x[0] - dst[0, 0]) < warper.ratio[0, 0] * 520:
+        dst[0, 0] = left_x[0]
         change = True
-    if np.isfinite(right_x[0]) and warper.ratio[0,0]*200 < abs(right_x[0] - dst[1,0]) < warper.ratio[0,0]*420:
-        dst[1,0] = right_x[0]
+    if np.isfinite(right_x[0]) and warper.ratio[0, 0] * 150 < abs(right_x[0] - dst[1, 0]) < warper.ratio[0, 0] * 520:
+        dst[1, 0] = right_x[0]
         change = True
-        
-#Src point update
+
+    # Src point update
     if change:
-        src_n = cv2.perspectiveTransform(np.array([dst]),warper.Minv)
-        src_n = np.squeeze(np.asarray(src_n))
-        trap_area = ((src_n[1, 0] - src_n[0, 0]) + (src_n[2, 0] - src_n[3, 0])) \
-                    * (src_n[2, 1] - src_n[1, 1]) / 2
-        if abs(trap_area - warper.trap_area) < 0.3 * warper.trap_area:
+        src_n = cv2.perspectiveTransform(np.asarray([dst], dtype=np.float32), np.asarray(warper.Minv, dtype=np.float32))
+        src_n = np.squeeze(np.asarray(src_n, dtype=np.int16))
+        trap_area = ((src_n[1, 0] - src_n[0, 0]) + (src_n[2, 0] - src_n[3, 0])) / 2.0 * (src_n[2, 1] - src_n[1, 1])
+        if abs(trap_area - warper.trap_area) < 0.5 * warper.trap_area:
             print('changed src ')
             print(np.array_str(src_n))
-            warper.src_n = src_n
+            warper.src_n = np.copy(src_n)    
 
 
 if __name__ == '__main__':
