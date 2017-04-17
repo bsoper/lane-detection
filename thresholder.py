@@ -60,7 +60,7 @@ class Thresholder:
 
         return base
 
-    def threshold(self, img):
+    def threshold(self, img, use_sobel=False):
         sobelx = cv2.Sobel(img[:, :, 2], cv2.CV_64F, 1, 0, ksize=self.sobel_kernel)
         sobely = cv2.Sobel(img[:, :, 2], cv2.CV_64F, 0, 1, ksize=self.sobel_kernel)
 
@@ -69,6 +69,10 @@ class Thresholder:
         color = self.color_thresh(img)
 
         combined = np.zeros_like(direc)
-        combined[((color == 1) & ((mag == 1) | (direc == 1)))] = 1
+        #combined[((color == 1) & ((mag == 1) | (direc == 1)))] = 1
+        if use_sobel:
+            combined[(mag == 1)] = 1
+        else:
+            combined[(color == 1)] = 1
 
         return combined

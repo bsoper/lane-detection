@@ -31,7 +31,7 @@ def main(video_name='other_video'):
         video_name = video_name.rsplit('.', 1)[0]
 
     white_output = '{}_done_2.mp4'.format(video_name)
-    clip1 = VideoFileClip('{}.mp4'.format(video_name))#.subclip(0, 5)
+    clip1 = VideoFileClip('{}.mp4'.format(video_name)).subclip(0, 5)
     white_clip = clip1.fl_image(process_image)  # NOTE: this function expects color images!!
     white_clip.write_videofile(white_output, audio=False)
 
@@ -44,67 +44,65 @@ def process_image(base):
     misc.imsave('output_images/undistorted.jpg', undistorted)
         # i = show_image(fig, i, undistorted, 'Undistorted', 'gray')
 
+    #try:
+    img, warp_color = generate_warped(undistorted, False)
+
+    # i = show_image(fig, i, img, 'Warped', 'gray')
     try:
-        img = thresholder.threshold(undistorted)
-        misc.imsave('output_images/thresholded.jpg', img)
-        # i = show_image(fig, i, img, 'Thresholded', 'gray')
-
-        img = warper.warp(img)
-        kernel = np.ones((np.ceil(img.shape[1]/40),np.ceil(img.shape[1]/40)),np.uint8)
-        img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
-
-        global image_filter
-        image_filter = verify_image_filter(image_filter)
-        img, image_filter = filter_image(img, image_filter)
-
-        misc.imsave('output_images/warped.jpg', img)
-        warp_color = warper.warp(undistorted)
-        warp_color[(img == 0)] = 0
-        misc.imsave('output_images/warped_color.jpg', warp_color)
+        left_lane, right_lane, left_fit, right_fit, img = analyze_and_polyfit(img, undistorted)
+    except:
+        img, warp_color = generate_warped(undistorted, True)
         #return warp_color
 
-        # i = show_image(fig, i, img, 'Warped', 'gray')
-        left_lane, right_lane, left_centers, right_centers = \
-            lane_type_analyzer.get_lane_type('output_images/warped.jpg', 'output_images/warped_color.jpg')
-        left_fit, right_fit = polyfitter.polyfit(img)
-        #left_fit, right_fit = generate_fits(left_centers, right_centers, img)
+        try:
+            left_lane, right_lane, left_fit, right_fit, img = analyze_and_polyfit(img, undistorted)
+        except:
+            if (lane_type_analyzer.left_fit != None and lane_type_analyzer.right_fit != None):
+                undistorted = polydrawer.draw(undistorted, lane_type_analyzer.left_fit, lane_type_analyzer.right_fit, warper.Minv)
+            img = add_lane_text(lane_type_analyzer.last_left, lane_type_analyzer.last_right, undistorted)
+            cv2.putText(img, "EXCEPTION IN PROCESSING", (450, 340), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                        color=(255, 0, 0), thickness=2)
+            return img
+    #return warp_color
 
-        img = polydrawer.draw(undistorted, left_fit, right_fit, warper.Minv)
-        misc.imsave('output_images/final.jpg', img)
-        lane_type_analyzer.update_polyfit_coeff(left_fit, right_fit)
+    lane_type_analyzer.update_polyfit_coeff(left_fit, right_fit)
 
-        # show_image(fig, i, img, 'Final')
+    # Add lane information to image
+    img = add_lane_text(left_lane, right_lane, img)
 
-        # plt.show()
-        # plt.get_current_fig_manager().frame.Maximize(True)
+    set_src(left_fit,right_fit,img.shape[0])
 
-        #lane_curve, car_pos = polyfitter.measure_curvature(img)
+    return img
 
-        # if car_pos > 0:
-        #     car_pos_text = '{}m right of center'.format(car_pos)
-        # else:
-        #     car_pos_text = '{}m left of center'.format(abs(car_pos))
+def generate_warped(undistorted, use_sobel):
+    img = thresholder.threshold(undistorted, use_sobel)
+    misc.imsave('output_images/thresholded.jpg', img)
+    # i = show_image(fig, i, img, 'Thresholded', 'gray')
 
-        # cv2.putText(img, "Lane curve: {}m".format(lane_curve.round()), (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1,
-        #             color=(255, 255, 255), thickness=2)
-        # cv2.putText(img, "Car is {}".format(car_pos_text), (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, color=(255, 255, 255),
-        #             thickness=2)
+    img = warper.warp(img)
+    kernel = np.ones((np.ceil(img.shape[1]/40),np.ceil(img.shape[1]/40)),np.uint8)
+    img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
+    global image_filter
+    image_filter = verify_image_filter(image_filter)
+    img, image_filter = filter_image(img, image_filter)
 
-        # Add lane information to image
-        img = add_lane_text(left_lane, right_lane, img)
+    misc.imsave('output_images/warped.jpg', img)
+    warp_color = warper.warp(undistorted)
+    warp_color[(img == 0)] = 0
+    misc.imsave('output_images/warped_color.jpg', warp_color)
 
-        # show_image(fig, i, img, 'Final')
-        # plt.imshow(img)
-        # plt.show()
-        set_src(left_fit,right_fit,img.shape[0])
-        return img
-    except:
-        if (lane_type_analyzer.left_fit != None and lane_type_analyzer.right_fit != None):
-            undistorted = polydrawer.draw(undistorted, lane_type_analyzer.left_fit, lane_type_analyzer.right_fit, warper.Minv)
-        img = add_lane_text(lane_type_analyzer.last_left, lane_type_analyzer.last_right, undistorted)
-        cv2.putText(img, "EXCEPTION IN PROCESSING", (450, 340), cv2.FONT_HERSHEY_SIMPLEX, 1,
-                    color=(255, 0, 0), thickness=2)
-        return img
+    return img, warp_color
+
+def analyze_and_polyfit(img, undistorted):
+    left_lane, right_lane, left_centers, right_centers = \
+        lane_type_analyzer.get_lane_type('output_images/warped.jpg', 'output_images/warped_color.jpg')
+    left_fit, right_fit = polyfitter.polyfit(img)
+    #left_fit, right_fit = generate_fits(left_centers, right_centers, img)
+
+    img = polydrawer.draw(undistorted, left_fit, right_fit, warper.Minv)
+    misc.imsave('output_images/final.jpg', img)
+
+    return left_lane, right_lane, left_fit, right_fit, img
 
 def show_image(fig, i, img, title, cmap=None):
     a = fig.add_subplot(2, 2, i)
