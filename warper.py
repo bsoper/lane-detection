@@ -62,7 +62,8 @@ class Warper:
 
         else:
             # Show image and expected point locations and ask for user input to get new src_n points
-            plt.imshow(img)
+            im1 = plt.imread('output_images/undistorted.jpg')
+            plt.imshow(im1)
             self.src_o = np.int16([
                 [580, 460],
                 [700, 460],
