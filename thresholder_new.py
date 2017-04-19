@@ -24,34 +24,34 @@ class Thresh:
         # Gets all local minima and maxima
         maxi = np.array([h[0][scs.argrelmax(h[0])], h[1][scs.argrelmax(h[0])]])
         mini = np.array([h[0][scs.argrelmin(h[0])], h[1][scs.argrelmin(h[0])]])
-        try:
+        #try:
             # finds max peak and two surrounding valleys and removes those pixels from the image
-            l1 = np.argmax(mini[1] > maxi[1, np.argmax(maxi[0])])
+        #    l1 = np.argmax(mini[1] > maxi[1, np.argmax(maxi[0])])
             # print(np.array_str(mini[1,l1]))
-            if l1 != 0:
-                img[(mini[1, l1 - 1] < img) & (img < mini[1, l1])] = 0
-            else:
-                img[img < mini[1, l1]] = 0
-        except:
-            if maxi.shape[1] > 0:
-                # if only one peak remove all values below peak+1
-                if maxi.shape[1] == 1:
-                    l1 = maxi[1, 0] + 10
-                elif maxi.shape[1] > 1:
-                    if np.argmax(maxi[0]) < maxi.shape[1] - 1:
-                        # finds max peak and two surrounding valleys and removes those pixels from the image
-                        l1 = mini[1, np.argmax(mini[1] > maxi[1, np.argmax(maxi[0])])]
-                        l1 = l1 + (maxi[1, maxi.shape[1] - 1] - l1) / 3
-                    # print(np.array_str(mini[1,l1]))
-                    else:
-                        l1 = maxi[1, maxi.shape[1] - 1] + 10
+            #if l1 != 0:
+             #   img[(mini[1, l1 - 1] < img) & (img < mini[1, l1])] = 0
+            #else:
+        #    img[img < mini[1, l1]+10] = 0
+        #except:
+        if maxi.shape[1] > 0:
+            # if only one peak remove all values below peak+1
+            if maxi.shape[1] == 1:
+                l1 = maxi[1, 0] + 5
+            elif maxi.shape[1] > 1:
+                if np.argmax(maxi[0]) < maxi.shape[1] - 1:
+                    # finds max peak and two surrounding valleys and removes those pixels from the image
+                    l1 = mini[1, np.argmax(mini[1] > maxi[1, np.argmax(maxi[0])])]
+                    l1 = l1 + (maxi[1, maxi.shape[1] - 1] - l1) / 3
+                # print(np.array_str(mini[1,l1]))
                 else:
-                    l1 = 255
+                    l1 = maxi[1, maxi.shape[1] - 1] + 5
             else:
                 l1 = 255
-            if l1 >= 245:
-                l1 = 245
-            img[img < l1] = 0
+        else:
+            l1 = 255
+        if l1 >= 245:
+            l1 = 245
+        img[img < l1] = 0
         # Calculate scharr derivatives and adjust
         sx = np.absolute(cv2.Scharr(img, cv2.CV_64F, 1, 0))
         scale_factor = np.max(sx) / 255
