@@ -89,6 +89,8 @@ def generate_warped(undistorted, use_sobel):
             or np.count_nonzero(img) > img.shape[0]*img.shape[1]/3 and not use_sobel:
         print('using histogram filter')
         img = thresh.thresh()
+        if np.count_nonzero(img) > img.shape[0]*img.shape[1]/3:
+            raise ValueError
 
     kernel = np.ones((np.ceil(img.shape[1]/40),np.ceil(img.shape[1]/40)),np.uint8)
     img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
