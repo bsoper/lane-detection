@@ -11,7 +11,7 @@ from thresholder import Thresholder
 from undistorter import Undistorter
 from warper import Warper
 from analyze_lane_type import LaneTypeAnalysis
-
+from thresholder_new import Thresh
 from image_filtering import filter_image, verify_image_filter
 
 undistorter = Undistorter()
@@ -20,6 +20,7 @@ warper = Warper()
 polyfitter = Polyfitter()
 polydrawer = Polydrawer()
 lane_type_analyzer = LaneTypeAnalysis()
+thresh = Thresh()
 
 image_filter = None
 
@@ -30,14 +31,14 @@ def main(video_name='other_video'):
     if video_name.endswith('.mp4'):
         video_name = video_name.rsplit('.', 1)[0]
 
-    white_output = '{}_done_2.mp4'.format(video_name)
-    clip1 = VideoFileClip('{}.mp4'.format(video_name)).subclip(0, 5)
+    white_output = '{}_done_4.mp4'.format(video_name)
+    clip1 = VideoFileClip('{}.mp4'.format(video_name))#.subclip(8.5, 18)
     white_clip = clip1.fl_image(process_image)  # NOTE: this function expects color images!!
     white_clip.write_videofile(white_output, audio=False)
 
 
 def process_image(base):
-    
+
     fig = plt.figure(figsize=(10, 8))
     i = 1
     undistorted = undistorter.undistort(base)
@@ -69,17 +70,26 @@ def process_image(base):
 
     # Add lane information to image
     img = add_lane_text(left_lane, right_lane, img)
-
+    misc.imsave('output_images/final.jpg', img)
     set_src(left_fit,right_fit,img.shape[0])
 
     return img
 
 def generate_warped(undistorted, use_sobel):
+    warp_color = warper.warp(undistorted)
+    misc.imsave('output_images/warped_color.jpg', warp_color)
     img = thresholder.threshold(undistorted, use_sobel)
     misc.imsave('output_images/thresholded.jpg', img)
     # i = show_image(fig, i, img, 'Thresholded', 'gray')
 
     img = warper.warp(img)
+
+    #Histogram filter used when color thresold fails and not using sobel
+    if np.count_nonzero(img) < img.shape[0]*2 \
+            or np.count_nonzero(img) > img.shape[0]*img.shape[1]/3 and not use_sobel:
+        print('using histogram filter')
+        img = thresh.thresh()
+
     kernel = np.ones((np.ceil(img.shape[1]/40),np.ceil(img.shape[1]/40)),np.uint8)
     img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
     global image_filter
@@ -100,7 +110,7 @@ def analyze_and_polyfit(img, undistorted):
     #left_fit, right_fit = generate_fits(left_centers, right_centers, img)
 
     img = polydrawer.draw(undistorted, left_fit, right_fit, warper.Minv)
-    misc.imsave('output_images/final.jpg', img)
+
 
     return left_lane, right_lane, left_fit, right_fit, img
 
@@ -153,18 +163,22 @@ def set_src(left,right,height):
     #    left_x = left(fity)
     #    right_x = right(fity)
     # Bottom points adjusting:
-    if np.isfinite(left_x[1]) and warper.ratio[0, 0] * 500 > abs(left_x[1] - dst[3, 0]) > warper.ratio[0, 0] * 50:
+    if np.isfinite(left_x[1]) and warper.ratio[0, 0] * 500 > abs(left_x[1] - dst[3, 0]) > warper.ratio[0, 0] * 50 \
+            and left_x[1] < dst[2,0]:
         dst[3, 0] = left_x[1]
         change = True
-    if np.isfinite(right_x[1]) and warper.ratio[0, 0] * 500 > abs(right_x[1] - dst[2, 0]) > warper.ratio[0, 0] * 50:
+    if np.isfinite(right_x[1]) and warper.ratio[0, 0] * 500 > abs(right_x[1] - dst[2, 0]) > warper.ratio[0, 0] * 50 \
+            and right_x[1] > dst[3,0]:
         dst[2, 0] = right_x[1]
         change = True
 
     # Top points adjusting:
-    if np.isfinite(left_x[0]) and warper.ratio[0, 0] * 150 < abs(left_x[0] - dst[0, 0]) < warper.ratio[0, 0] * 520:
+    if np.isfinite(left_x[0]) and warper.ratio[0, 0] * 150 < abs(left_x[0] - dst[0, 0]) < warper.ratio[0, 0] * 520 \
+            and left_x[0] < dst[1,0]:
         dst[0, 0] = left_x[0]
         change = True
-    if np.isfinite(right_x[0]) and warper.ratio[0, 0] * 150 < abs(right_x[0] - dst[1, 0]) < warper.ratio[0, 0] * 520:
+    if np.isfinite(right_x[0]) and warper.ratio[0, 0] * 150 < abs(right_x[0] - dst[1, 0]) < warper.ratio[0, 0] * 520 \
+            and right_x[0] > dst[0,0]:
         dst[1, 0] = right_x[0]
         change = True
 
@@ -173,7 +187,8 @@ def set_src(left,right,height):
         src_n = cv2.perspectiveTransform(np.asarray([dst], dtype=np.float32), np.asarray(warper.Minv, dtype=np.float32))
         src_n = np.squeeze(np.asarray(src_n, dtype=np.int16))
         trap_area = ((src_n[1, 0] - src_n[0, 0]) + (src_n[2, 0] - src_n[3, 0])) / 2.0 * (src_n[2, 1] - src_n[1, 1])
-        if abs(trap_area - warper.trap_area) < 0.5 * warper.trap_area:
+        if abs(trap_area - warper.trap_area) < 0.3 * warper.trap_area and \
+                src_n[0,0] < src_n[1,0] and src_n[3,0] < src_n[2,0]:
             print('changed src ')
             print(np.array_str(src_n))
             warper.src_n = np.copy(src_n)    
