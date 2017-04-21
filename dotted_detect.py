@@ -16,13 +16,11 @@ def detect_dotted(img, left_lane, right_lane):
     right_side = img[:, width / 2:]
 
     left_lane.solid, left_lane_info = detect_dotted_side(left_side)
-    # left_lane_info = filter_lane_info(left_lane_info)
     left_width = calculate_lane_width(left_lane_info)
     right_lane.solid, right_lane_info = detect_dotted_side(right_side)
-    #print (filter_lane_info(left_lane_info))
-    # right_lane_info = filter_lane_info(right_lane_info)
     right_width = calculate_lane_width(right_lane_info)
 
+    # Update single vs double based on lane's relative width.
     ratio = left_width / right_width
     left_lane.single = 'Single'
     right_lane.single = 'Single'
@@ -43,13 +41,6 @@ def calculate_lane_width(lane_info):
     else:
         return sum(widths) / len(widths)
 
-def filter_lane_info(lane_info):
-    center_initial = sum([info[0][0] for info in lane_info]) / len(lane_info)
-    thresh = calculate_lane_width(lane_info)
-    filtered = [info for info in lane_info if abs(center_initial - info[0][0]) < thresh]
-    #print (center_initial, thresh)
-    return filtered
-
 def detect_dotted_side(img):
     height, width = img.shape
     row_sum = np.sum(img, axis=1)
@@ -57,6 +48,8 @@ def detect_dotted_side(img):
     lane_info = []
     num_zero = 0
 
+    # Take cross sections. Save lane width and center information and
+    # determine if it intersected a lane.
     for i in range(100):
         index = randint(top_img_nonzero,height-1)
         trimmed = np.trim_zeros(img[index,:])
@@ -73,5 +66,3 @@ def detect_dotted_side(img):
 
 if __name__ == '__main__':
     left = detect_dotted(sys.argv[1])
-    # plt.imshow(detect_dotted('warped3.jpg'),cmap = 'gray')
-    # plt.show()

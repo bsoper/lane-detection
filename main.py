@@ -25,13 +25,12 @@ image_filter = None
 
 
 def main(video_name='other_video'):
-    # video = 'harder_challenge_video'
-    # video = 'challenge_video'
     if video_name.endswith('.mp4'):
         video_name = video_name.rsplit('.', 1)[0]
 
-    white_output = '{}_done_2.mp4'.format(video_name)
-    clip1 = VideoFileClip('{}.mp4'.format(video_name)).subclip(0, 5)
+    white_output = '{}_done.mp4'.format(video_name)
+    # Uncomment the end of the line to analyze a subclip of the video.
+    clip1 = VideoFileClip('{}.mp4'.format(video_name))#.subclip(0, 5)
     white_clip = clip1.fl_image(process_image)  # NOTE: this function expects color images!!
     white_clip.write_videofile(white_output, audio=False)
 
@@ -42,42 +41,41 @@ def process_image(base):
     i = 1
     undistorted = undistorter.undistort(base)
     misc.imsave('output_images/undistorted.jpg', undistorted)
-        # i = show_image(fig, i, undistorted, 'Undistorted', 'gray')
 
-    #try:
     img, warp_color = generate_warped(undistorted, False)
 
-    # i = show_image(fig, i, img, 'Warped', 'gray')
+    # Try lane analysis with color thresholding.
     try:
         left_lane, right_lane, left_fit, right_fit, img = analyze_and_polyfit(img, undistorted)
     except:
+        # Try lane analysis with only sobel thresholding.
         img, warp_color = generate_warped(undistorted, True)
-        #return warp_color
 
         try:
             left_lane, right_lane, left_fit, right_fit, img = analyze_and_polyfit(img, undistorted)
         except:
+            # Use last sucessful polyfit.
             if (lane_type_analyzer.left_fit != None and lane_type_analyzer.right_fit != None):
                 undistorted = polydrawer.draw(undistorted, lane_type_analyzer.left_fit, lane_type_analyzer.right_fit, warper.Minv)
             img = add_lane_text(lane_type_analyzer.last_left, lane_type_analyzer.last_right, undistorted)
             cv2.putText(img, "EXCEPTION IN PROCESSING", (450, 340), cv2.FONT_HERSHEY_SIMPLEX, 1,
                         color=(255, 0, 0), thickness=2)
             return img
-    #return warp_color
 
     lane_type_analyzer.update_polyfit_coeff(left_fit, right_fit)
 
     # Add lane information to image
     img = add_lane_text(left_lane, right_lane, img)
 
+    # Update the trapizoid warp points.
     set_src(left_fit,right_fit,img.shape[0])
 
     return img
 
+# Create a warped image.
 def generate_warped(undistorted, use_sobel):
     img = thresholder.threshold(undistorted, use_sobel)
     misc.imsave('output_images/thresholded.jpg', img)
-    # i = show_image(fig, i, img, 'Thresholded', 'gray')
 
     img = warper.warp(img)
     kernel = np.ones((np.ceil(img.shape[1]/40),np.ceil(img.shape[1]/40)),np.uint8)
@@ -97,6 +95,8 @@ def analyze_and_polyfit(img, undistorted):
     left_lane, right_lane, left_centers, right_centers = \
         lane_type_analyzer.get_lane_type('output_images/warped.jpg', 'output_images/warped_color.jpg')
     left_fit, right_fit = polyfitter.polyfit(img)
+    # Uncomment to try to use our generated center points as polyfit values. This is currently less accurate.
+    # If you want to use this method, then comment the above line as well.
     #left_fit, right_fit = generate_fits(left_centers, right_centers, img)
 
     img = polydrawer.draw(undistorted, left_fit, right_fit, warper.Minv)
@@ -110,19 +110,15 @@ def show_image(fig, i, img, title, cmap=None):
     a.set_title(title)
     return i + 1
 
-
 def generate_fits(left_centers, right_centers, img):
     height, width = img.shape
     leftx = [p[0] for p in left_centers]
     lefty = [p[1] for p in left_centers]
     rightx = [p[0] + width / 2 for p in right_centers]
     righty = [p[1] for p in right_centers]
-    #print (leftx)
-    #print (righty)
     left_fit = np.polyfit(lefty, leftx, 2)
     right_fit = np.polyfit(righty, rightx, 2)
     return left_fit, right_fit
-
 
 def add_lane_text(left_lane, right_lane, img):
     height, width, depth = img.shape
@@ -149,9 +145,6 @@ def set_src(left,right,height):
     left_x = left_fit[3] * fity ** 3 + left_fit[2] * fity ** 2 + left_fit[1] * fity + left_fit[0]
     right_x = right_fit[3] * fity ** 3 + right_fit[2] * fity ** 2 + right_fit[1] * fity + right_fit[0]
 
-    # Splinefit method
-    #    left_x = left(fity)
-    #    right_x = right(fity)
     # Bottom points adjusting:
     if np.isfinite(left_x[1]) and warper.ratio[0, 0] * 500 > abs(left_x[1] - dst[3, 0]) > warper.ratio[0, 0] * 50:
         dst[3, 0] = left_x[1]

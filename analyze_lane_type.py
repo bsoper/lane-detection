@@ -18,12 +18,12 @@ class LaneTypeAnalysis:
         right_lane = Lane()
         left_lane = Lane()
 
+        # Detect color.
         left_lane.color, right_lane.color = detect_color(color_img)
+        # Detect solid vs dotted and single vs double.
         left_lane, right_lane, left_centers, right_centers = detect_dotted(img, left_lane, right_lane)
 
-        #print (right_lane.single)
-
-        # handle errors
+        # Handle errors. Don't update lane information unless new lane has been seen for 5 frames.
         if left_lane != self.last_left:
             if self.new_count_left >= 5 or self.first_frame:
                 self.last_left = left_lane
